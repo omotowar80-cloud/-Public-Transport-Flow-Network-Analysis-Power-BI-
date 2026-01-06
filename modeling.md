@@ -1,7 +1,4 @@
 # Modeling: Total Passengers — Measures, Validation Queries, and Power Query Fix
-
-This file collects interview-ready DAX measures, DAX Studio validation queries, a recommended Power Query (M) fix, and short talking points you can use when applying for BI Engineer / Semantic Model roles. I converted the guidance and examples we discussed into a single reference file.
-
 ---
 
 ## Measures
