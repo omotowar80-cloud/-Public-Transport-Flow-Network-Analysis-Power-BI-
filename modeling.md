@@ -130,8 +130,3 @@ Why: fixes data issues upstream so you can use the simple `SUM()` measure in the
 ## What I did and next steps
 
 I consolidated the robust and performant DAX measure variants, ready-to-run DAX Studio validation queries, a Power Query M snippet to fix the source column, and concise interviewing talking points into a single `modeling.md` file for easy reference.
-
-Next you can:
-- Replace placeholder column/table names (e.g., `TripDate`, `PassengerID`) with the exact names in your model,
-- I can produce a calculated column to flag non-numeric rows for quick inspection,
-- Or I can produce a Power Query step adapted to your query step names. Tell me which you want and I'll update the file.
