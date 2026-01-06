@@ -117,14 +117,6 @@ Why: fixes data issues upstream so you can use the simple `SUM()` measure in the
 
 ---
 
-## Interview Talking Points (short)
-
-- Use `SUM()` when the column is numeric — it's the most performant aggregation.
-- Use `SUMX()` with safe conversion only if the column contains text/dirty data.
-- Prefer fixing data in Power Query to simplify DAX and improve model refresh/query performance.
-- Provide an "All" measure with `CALCULATE(..., ALL(table))` for KPIs that ignore slicers/filters.
-- Validate measures in DAX Studio with scalar rows, per-dimension comparisons, and sampling of bad rows.
-
 ---
 
 ## What I did and next steps
