@@ -1,0 +1,100 @@
+/*
+  actual_trips_breakdowns.dax
+  - Measures + reusable DAX queries to break down Total Passenger by date, route, driver, and combinations.
+  - Open in DAX Studio (or paste measures into Power BI Desktop) and run the EVALUATE block you need.
+  - Replace table/column names if your model uses different names.
+*/
+
+/* Measures */
+DEFINE
+    MEASURE 'Actual Trips'[Total Passenger] = SUM('Actual Trips'[Passengers On])
+    MEASURE 'Actual Trips'[Total Passenger All] = CALCULATE( SUM('Actual Trips'[Passengers On]), ALL('Actual Trips') )
+    MEASURE 'Actual Trips'[Avg Passengers Per Trip] = DIVIDE( [Total Passenger], COUNTROWS('Actual Trips'), 0 )
+    MEASURE 'Actual Trips'[Percent of Total Passenger] = DIVIDE( [Total Passenger], [Total Passenger All], 0 )
+
+/* ------------------------------------------------------------------------
+   1) Breakdown by Trip Date (daily)
+   ------------------------------------------------------------------------ */
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Actual Trips'[Trip Date],
+    "Total Passenger", [Total Passenger],
+    "Trips", COUNTROWS('Actual Trips'),
+    "Avg Per Trip", [Avg Passengers Per Trip],
+    "Percent of Total", [Percent of Total Passenger]
+)
+ORDER BY 'Actual Trips'[Trip Date]
+
+/* ------------------------------------------------------------------------
+   2) Breakdown by Route
+   ------------------------------------------------------------------------ */
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Actual Trips'[Route],
+    "Total Passenger", [Total Passenger],
+    "Trips", COUNTROWS('Actual Trips'),
+    "Avg Per Trip", [Avg Passengers Per Trip],
+    "Percent of Total", [Percent of Total Passenger]
+)
+ORDER BY [Total Passenger] DESC
+
+/* ------------------------------------------------------------------------
+   3) Breakdown by Driver
+   ------------------------------------------------------------------------ */
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Actual Trips'[Driver],
+    "Total Passenger", [Total Passenger],
+    "Trips", COUNTROWS('Actual Trips'),
+    "Avg Per Trip", [Avg Passengers Per Trip],
+    "Percent of Total", [Percent of Total Passenger]
+)
+ORDER BY [Total Passenger] DESC
+
+/* ------------------------------------------------------------------------
+   4) Combined breakdown: Date x Route x Driver
+   ------------------------------------------------------------------------ */
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Actual Trips'[Trip Date],
+    'Actual Trips'[Route],
+    'Actual Trips'[Driver],
+    "Total Passenger", [Total Passenger],
+    "Trips", COUNTROWS('Actual Trips'),
+    "Avg Per Trip", [Avg Passengers Per Trip]
+)
+ORDER BY 'Actual Trips'[Trip Date], [Total Passenger] DESC
+
+/* ------------------------------------------------------------------------
+   5) Top N Drivers by Total Passenger (Top 10)
+   ------------------------------------------------------------------------ */
+EVALUATE
+TOPN(
+    10,
+    ADDCOLUMNS(
+        VALUES('Actual Trips'[Driver]),
+        "TotalPassenger", CALCULATE( SUM('Actual Trips'[Passengers On]) ),
+        "Trips", CALCULATE( COUNTROWS('Actual Trips') )
+    ),
+    [TotalPassenger], DESC
+)
+
+/* ------------------------------------------------------------------------
+   6) Monthly totals (requires a Date dimension table 'Date')
+   Replace 'Date' table/columns if different in your model
+   ------------------------------------------------------------------------ */
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    'Date'[MonthNumber],
+    'Date'[MonthName],
+    "Total Passenger", [Total Passenger],
+    "Trips", COUNTROWS('Actual Trips')
+)
+ORDER BY 'Date'[Year], 'Date'[MonthNumber]
+
+/* ------------------------------------------------------------------------
+   7) Absolute total (ignores model filters)
+   ------------------------------------------------------------------------ */
+EVALUATE
+ROW("Total Passenger (All)", [Total Passenger All])
