@@ -1,0 +1,154 @@
+Daily totals (by trip date)
+DEFINE
+    MEASURE 'Actual Trips'[Total Passenger] = SUM('Actual Trips'[Passengers On])
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Actual Trips'[Trip Date],
+    "Total Passenger", [Total Passenger],
+    "Trips", COUNTROWS('Actual Trips')
+)
+
+Output: one row per Trip Date with total passengers + trip count.
+Monthly totals (using a calendar/date dimension
+DEFINE
+    MEASURE 'Actual Trips'[Total Passenger] = SUM('Actual Trips'[Passengers On])
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    'Date'[MonthNumber],          -- use MonthNumber to order properly
+    'Date'[MonthName],
+    "Total Passenger", [Total Passenger],
+    "Trips", COUNTROWS('Actual Trips')
+)
+ORDER BY 'Date'[Year], 'Date'[MonthNumber]
+
+DEFINE
+    MEASURE 'Actual Trips'[Total Passenger] = SUM('Actual Trips'[Passengers On])
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Date'[Year],
+    'Date'[MonthNumber],          -- use MonthNumber to order properly
+    'Date'[MonthName],
+    "Total Passenger", [Total Passenger],
+    "Trips", COUNTROWS('Actual Trips')
+)
+ORDER BY 'Date'[Year], 'Date'[MonthNumber]
+
+Use a proper date dimension (recommended) for correct time intelligence and ordering.
+Totals by route
+
+DEFINE
+    MEASURE 'Actual Trips'[Total Passenger] = SUM('Actual Trips'[Passengers On])
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Actual Trips'[Route],
+    "Total Passenger", [Total Passenger],
+    "Trips", COUNTROWS('Actual Trips')
+)
+ORDER BY [Total Passenger] DESC
+
+Totals by driver (driver in same table)
+
+DEFINE
+    MEASURE 'Actual Trips'[Total Passenger] = SUM('Actual Trips'[Passengers On])
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Actual Trips'[Driver],
+    "Total Passenger", [Total Passenger],
+    "Trips", COUNTROWS('Actual Trips')
+)
+ORDER BY [Total Passenger] DESC
+
+If drivers are in a separate dimension table (Drivers[Name]), use that column instead:
+
+Combined breakdown: date × route × driver
+
+DEFINE
+    MEASURE 'Actual Trips'[Total Passenger] = SUM('Actual Trips'[Passengers On])
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Actual Trips'[Trip Date],
+    'Actual Trips'[Route],
+    'Actual Trips'[Driver],
+    "Total Passenger", [Total Passenger],
+    "Trips", COUNTROWS('Actual Trips')
+)
+ORDER BY 'Actual Trips'[Trip Date], [Total Passenger] DESC
+
+Use paging/filters if the result set is large.
+Top N drivers by total passengers (overall) Option A — using SUMMARIZE + TOPN:
+
+EVALUATE
+TOPN(
+  10,
+  SUMMARIZE(
+    'Actual Trips',
+    'Actual Trips'[Driver],
+    "TotalPassenger", SUM('Actual Trips'[Passengers On])
+  ),
+  [TotalPassenger],
+  DESC
+)
+
+Option B — using ADDCOLUMNS + VALUES
+
+EVALUATE
+TOPN(
+  10,
+  ADDCOLUMNS(
+    VALUES('Actual Trips'[Driver]),
+    "TotalPassenger", CALCULATE(SUM('Actual Trips'[Passengers On]))
+  ),
+  [TotalPassenger],
+  DESC
+)
+
+EVALUATE
+TOPN(
+  10,
+  ADDCOLUMNS(
+    VALUES('Actual Trips'[Driver]),
+    "TotalPassenger", CALCULATE(SUM('Actual Trips'[Passengers On]))
+  ),
+  [TotalPassenger],
+  DESC
+)
+Filtering by date range, specific route, or driver (like WHERE) Example — last 30 days and only Route 'A':
+SQL
+DEFINE
+    MEASURE 'Actual Trips'[Total Passenger] = SUM('Actual Trips'[Passengers On])
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Actual Trips'[Trip Date],
+    'Actual Trips'[Route],
+    "Total Passenger", [Total Passenger],
+    FILTER(
+      'Actual Trips',
+      'Actual Trips'[Trip Date] >= TODAY() - 30
+      && 'Actual Trips'[Route] = "A"
+    )
+)
+Or use KEEPFILTERS inside CALCULATE for more complex logic.
+
+Get totals ignoring report/page filters (absolute totals)
+SQL
+DEFINE
+    MEASURE 'Actual Trips'[Total Passenger All] =
+        CALCULATE( SUM('Actual Trips'[Passengers On]), ALL('Actual Trips') )
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Actual Trips'[Route],
+    "Total Passenger (All Filters Ignored)", [Total Passenger All]
+)
+Additional useful columns
+Average passengers per trip: ADDCOLUMNS or create a measure: AveragePassengers = DIVIDE([Total Passenger], COUNTROWS('Actual Trips'))
+Percent of total (by route/driver): % of Total = DIVIDE([Total Passenger], CALCULATE([Total Passenger], ALL('Actual Trips')))
+Performance & practical tips
+Prefer SUMMARIZECOLUMNS for performance and to respect filter context; use VALUES/ADDCOLUMNS when you need calculated columns per group.
+For large datasets limit rows (filters, TOPN) or aggregate at higher granularity (month instead of day).
+Keep numeric columns typed correctly (Passengers On must be numeric).
+Use a proper date dimension for consistent time-based groupings and to leverage time-intelligence functions.
+If you need subtotals/rollups, consider building separate queries for each level (or use DAX functions for subtotals — SUMMARIZECOLUMNS doesn’t auto-insert hierarchical subtotals).
+Example expected output (conceptual)
+
+By Route: Route | Total Passenger | Trips | Avg Per Trip R1 | 12,340 | 1,234 | 10.0 R2 | 8,900 | 890 | 10.0
