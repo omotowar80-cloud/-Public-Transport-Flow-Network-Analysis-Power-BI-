@@ -1,0 +1,14 @@
+
+What I did
+- Created a single .dax file containing a reusable measure set and seven queries that produce common breakdowns: daily, monthly (via Date table), by route, by driver, combined date/route/driver, top N drivers, and absolute total.
+- Included helper measures: average per trip and percent-of-total to surface useful KPIs alongside totals.
+
+How to import / run
+- DAX Studio (recommended for ad-hoc queries):
+  1. Open DAX Studio and connect to your Power BI Desktop file or SSAS model.
+  2. File → Open → select this .dax file.
+  3. Place cursor on the EVALUATE statement you want and press Run (or select the block and run).
+- Power BI Desktop (to add persistent measures):
+  1. In Power BI Desktop, go to Modeling → New measure.
+  2. Copy each measure expression (the right-hand side only) from the DEFINE block and create the corresponding measure in your model.
+  3. Build visuals using those measures and the provided group-by columns.
