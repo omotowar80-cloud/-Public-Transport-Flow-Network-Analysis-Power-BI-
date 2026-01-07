@@ -1,0 +1,29 @@
+-- Define measures for passenger analytics
+DEFINE
+    MEASURE 'Actual Trips'[Total Passenger] = SUM('Actual Trips'[Passengers On])
+    MEASURE 'Actual Trips'[Average Passenger] = AVERAGE('Actual Trips'[Passengers On])
+    MEASURE 'Actual Trips'[Max Passenger] = MAX('Actual Trips'[Passengers On])
+    MEASURE 'Actual Trips'[Trips Count] = COUNTROWS('Actual Trips')
+    MEASURE 'Actual Trips'[Passenger Rank] =
+        RANKX(
+            ALL('Actual Trips'[Route]), 
+            [Total Passenger], 
+            , 
+            DESC, 
+            DENSE
+        )
+
+-- Summarize top 5 routes per day
+EVALUATE
+    FILTER(
+        SUMMARIZECOLUMNS(
+            'Actual Trips'[Route],
+            'Actual Trips'[Date],
+            "Total Passenger", [Total Passenger],
+            "Average Passenger", [Average Passenger],
+            "Max Passenger", [Max Passenger],
+            "Trips Count", [Trips Count],
+            "Passenger Rank", [Passenger Rank]
+        ),
+        [Passenger Rank] <= 5
+    )
