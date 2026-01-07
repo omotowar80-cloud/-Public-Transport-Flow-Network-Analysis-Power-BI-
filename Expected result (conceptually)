@@ -1,0 +1,22 @@
+Total Passenger
+12345
+(12345 is the sum of Passengers On across the Actual Trips rows visible in the current filter context.)
+
+Important notes and gotchas
+
+SUM requires Passengers On to be numeric. Non-numeric values will cause errors.
+SUM ignores blank values (they are not counted).
+SUMMARIZECOLUMNS without group columns returns exactly one row. If you intended to break down totals (by date, route, etc.) you must pass grouping columns to SUMMARIZECOLUMNS.
+SUMMARIZECOLUMNS respects the current external filter context. If you want the absolute total regardless of filters, wrap the measure in CALCULATE(..., ALL('Actual Trips')).
+Defining measures inline with DEFINE is fine for ad-hoc queries (DAX Studio, SSAS/Tomato), but to persist the measure you should create it in the model.
+Alternatives / examples
+
+If you want the total ignoring filters: DEFINE MEASURE 'Actual Trips'[Total Passenger] = CALCULATE(SUM('Actual Trips'[Passengers On]), ALL('Actual Trips')) EVALUATE SUMMARIZECOLUMNS("Total Passenger", [Total Passenger])
+
+If you want totals per route: DEFINE MEASURE 'Actual Trips'[Total Passenger] = SUM('Actual Trips'[Passengers On]) EVALUATE SUMMARIZECOLUMNS( 'Actual Trips'[Route], "Total Passenger", [Total Passenger] )
+
+As a minimal single scalar row using ROW (if you just want a one-row result): DEFINE MEASURE 'Actual Trips'[Total Passenger] = SUM('Actual Trips'[Passengers On]) EVALUATE ROW("Total Passenger", [Total Passenger])
+
+Performance tip
+
+SUM is efficient. If you add many grouping columns or compute expensive expressions per row, consider pre-aggregating or limiting the rowset.
