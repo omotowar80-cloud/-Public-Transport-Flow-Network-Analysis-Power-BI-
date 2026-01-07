@@ -1,0 +1,2 @@
+Public Transport Flow & Network Analysis (Power BI)Public Transport Flow & Network Analysis (Power BI)
+Developed a comprehensive analysis of public transportation data to reveal passenger flow, route performance, and network connectivity. Leveraged Power Query for data cleaning, DAX for advanced metrics, and interactive Power BI dashboards to identify high-demand routes and critical transit hubs. Published detailed insights, visuals, and explanations on GitHub, highlighting analytical thinking, data storytelling, and actionable insights.
